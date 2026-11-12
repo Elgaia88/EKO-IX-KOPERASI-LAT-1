@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Ujian Perkoperasian Indonesia (30 Soal)</title>
+    <!-- Library Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-color: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--bg-card);
+            width: 100%;
+            max-width: 780px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            padding: 32px;
+            transition: all 0.3s ease;
+        }
+
+        h1, h2 {
+            color: var(--text-main);
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+
+        /* Start Screen */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+        }
+
+        .duration-options {
+            display: flex;
+            gap: 12px;
+        }
+
+        .duration-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            background-color: #f8fafc;
+            color: #1e293b;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .duration-btn.active {
+            border-color: var(--primary);
+            background-color: #eff6ff;
+            color: var(--primary-dark);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* Quiz Header */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .badge {
+            background-color: #e2e8f0;
+            color: #1e293b;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .timer-box {
+            background-color: #fef3c7;
+            color: #92400e;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1rem;
+            border: 1px solid #f59e0b;
+        }
+
+        .timer-box.danger {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border-color: #ef4444;
+            animation: pulse 0.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+            100% { transform: scale(1); }
+        }
+
+        /* Question & Options */
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 22px;
+            color: #0f172a;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Kontras warna font dan latar jawaban terjamin jelas */
+        .option-btn {
+            width: 100%;
+            text-align: left;
+            padding: 14px 18px;
+            background-color: #f8fafc;
+            color: #0f172a;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: #e0f2fe;
+            border-color: #0284c7;
+            color: #0369a1;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        /* Jawaban Benar: Latar Hijau Gelap, Font Putih */
+        .option-btn.correct {
+            background-color: #16a34a !important;
+            border-color: #15803d !important;
+            color: #ffffff !important;
+            font-weight: 700;
+        }
+
+        /* Jawaban Salah: Latar Merah Gelap, Font Putih */
+        .option-btn.wrong {
+            background-color: #dc2626 !important;
+            border-color: #b91c1c !important;
+            color: #ffffff !important;
+            font-weight: 700;
+        }
+
+        .status-msg {
+            margin-top: 16px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            min-height: 24px;
+            text-align: center;
+        }
+
+        .next-btn-wrap {
+            margin-top: 18px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-next {
+            padding: 10px 24px;
+            background-color: #0f172a;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-next:hover {
+            background-color: #334155;
+        }
+
+        /* Result & Review Screen */
+        .score-card {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            color: #ffffff;
+            padding: 24px;
+            border-radius: 14px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .score-number {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 8px 0;
+        }
+
+        .review-container {
+            max-height: 440px;
+            overflow-y: auto;
+            padding-right: 8px;
+            margin-bottom: 20px;
+            border-top: 2px solid #e2e8f0;
+            padding-top: 16px;
+        }
+
+        .review-item {
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 14px;
+        }
+
+        .review-q {
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #0f172a;
+        }
+
+        .review-ans {
+            font-size: 0.92rem;
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-top: 4px;
+        }
+
+        .ans-user-correct {
+            background-color: #dcfce7;
+            color: #14532d;
+            border-left: 4px solid #16a34a;
+        }
+
+        .ans-user-wrong {
+            background-color: #fee2e2;
+            color: #7f1d1d;
+            border-left: 4px solid #dc2626;
+        }
+
+        .ans-key {
+            background-color: #e0f2fe;
+            color: #0c4a6e;
+            border-left: 4px solid #0284c7;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- HALAMAN AWAL -->
+    <div id="start-screen">
+        <h1 id="quiz-title-display">Kuis Prediksi Ujian: Perkoperasian Indonesia</h1>
+        <p class="subtitle">30 Soal Pilihan Ganda berdasarkan UU No. 25 Tahun 1992, UUD 1945, Prinsip, Jenis, Tingkatan, dan Permodalan Koperasi.</p>
+        
+        <div class="form-group">
+            <label for="player-name">Masukkan Nama Peserta Kuis:</label>
+            <input type="text" id="player-name" placeholder="Contoh: Budi Santoso" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+            <label>Pilih Durasi Waktu Per Soal:</label>
+            <div class="duration-options">
+                <button type="button" class="duration-btn active" data-time="15" onclick="selectDuration(15, this)">15 Detik</button>
+                <button type="button" class="duration-btn" data-time="30" onclick="selectDuration(30, this)">30 Detik</button>
+            </div>
+        </div>
+
+        <button class="btn-primary" onclick="startQuiz()">Mulai Kuis Sekarang</button>
+    </div>
+
+    <!-- HALAMAN KUIS -->
+    <div id="quiz-screen" class="hidden">
+        <div class="quiz-header">
+            <span class="badge" id="player-display">Peserta: -</span>
+            <span class="badge" id="progress-display">Soal 1 / 30</span>
+            <div class="timer-box" id="timer-display">Waktu: 15s</div>
+        </div>
+
+        <div class="question-text" id="question-text">Memuat pertanyaan...</div>
+        
+        <div class="options-list" id="options-container"></div>
+
+        <div class="status-msg" id="status-msg"></div>
+
+        <div class="next-btn-wrap hidden" id="next-wrap">
+            <button class="btn-next" id="next-btn" onclick="nextQuestion()">Soal Berikutnya &rarr;</button>
+        </div>
+    </div>
+
+    <!-- HALAMAN HASIL & REVIEW -->
+    <div id="result-screen" class="hidden">
+        <h2 id="result-quiz-title" style="text-align: center;">Kuis Prediksi Ujian: Perkoperasian Indonesia</h2>
+        <div class="score-card">
+            <div id="result-player" style="font-size: 1.1rem; font-weight: 600;">Peserta: -</div>
+            <div class="score-number" id="final-score">0</div>
+            <div id="score-detail">Benar: 0 dari 30 Soal</div>
+        </div>
+
+        <h3>Review Jawaban Lengkap:</h3>
+        <div class="review-container" id="review-list"></div>
+
+        <button class="btn-primary" onclick="restartQuiz()">Ulangi Kuis (Acak Ulang Soal & Jawaban)</button>
+    </div>
+</div>
+
+<script>
+    const QUIZ_TITLE = "Kuis Prediksi Ujian: Perkoperasian Indonesia";
+
+    // Bank 30 Soal Prediksi Ujian berdasarkan dokumen materi Koperasi
+    const questionBank = [
+        {
+            q: "Undang-Undang yang mengatur tentang Perkoperasian di Indonesia sebagai landasan operasional koperasi adalah...",
+            options: ["UU Nomor 25 Tahun 1992", "UU Nomor 12 Tahun 1967", "UU Nomor 17 Tahun 2012", "UU Nomor 40 Tahun 2007"],
+            answer: "UU Nomor 25 Tahun 1992"
+        },
+        {
+            q: "Menurut Pasal 1 UU No. 25 Tahun 1992, koperasi merupakan gerakan ekonomi rakyat yang berdasar atas asas...",
+            options: ["Kekeluargaan", "Individualisme", "Persaingan bebas", "Kapitalisme"],
+            answer: "Kekeluargaan"
+        },
+        {
+            q: "Berikut ini yang BUKAN merupakan makna pokok pengertian koperasi berdasarkan UU No. 25 Tahun 1992 adalah...",
+            options: [
+                "Didirikan semata-mata untuk mengejar keuntungan pemilik modal",
+                "Koperasi merupakan badan usaha",
+                "Didirikan oleh orang seorang dan/atau badan hukum koperasi",
+                "Dikelola berdasarkan prinsip-prinsip koperasi dan asas kekeluargaan"
+            ],
+            answer: "Didirikan semata-mata untuk mengejar keuntungan pemilik modal"
+        },
+        {
+            q: "Berikut adalah nilai-nilai yang mendasari kegiatan koperasi, KECUALI...",
+            options: ["Monopoli", "Kekeluargaan", "Demokrasi", "Kemandirian"],
+            answer: "Monopoli"
+        },
+        {
+            q: "Adanya kesadaran dalam hati nurani setiap anggota untuk menjalankan koperasi, oleh semua dan untuk semua merupakan makna dari asas...",
+            options: ["Asas Kekeluargaan", "Asas Gotong Royong", "Asas Keadilan", "Asas Kemandirian"],
+            answer: "Asas Kekeluargaan"
+        },
+        {
+            q: "Asas yang menekankan bahwa dalam berkoperasi harus ada keinsafan, kesadaran, semangat kerjasama, serta tanggung jawab bersama disebut...",
+            options: ["Asas Gotong Royong", "Asas Kekeluargaan", "Asas Otonomi", "Asas Keterbukaan"],
+            answer: "Asas Gotong Royong"
+        },
+        {
+            q: "Landasan ideal koperasi di Indonesia adalah...",
+            options: ["Pancasila", "Pasal 33 Ayat 1 UUD 1945", "UU RI No. 25 Tahun 1992", "Kesetiakawanan dan kesadaran pribadi"],
+            answer: "Pancasila"
+        },
+        {
+            q: "Landasan struktural koperasi di Indonesia tercantum dalam...",
+            options: ["Pasal 33 Ayat 1 UUD 1945", "Pancasila Sila ke-5", "UU No. 25 Tahun 1992", "Tap MPR RI"],
+            answer: "Pasal 33 Ayat 1 UUD 1945"
+        },
+        {
+            q: "Kesetiakawanan dan kesadaran pribadi merupakan bagian dari landasan koperasi Indonesia, yaitu landasan...",
+            options: ["Landasan Mental", "Landasan Ideal", "Landasan Struktural", "Landasan Operasional"],
+            answer: "Landasan Mental"
+        },
+        {
+            q: "Bunyi Pasal 33 Ayat 1 UUD 1945 yang menjadi landasan struktural koperasi adalah...",
+            options: [
+                "Perekonomian sebagai usaha bersama atas asas kekeluargaan",
+                "Cabang-cabang produksi yang penting bagi negara dikuasai oleh negara",
+                "Bumi dan air dan kekayaan alam yang terkandung di dalamnya dikuasai oleh negara",
+                "Perekonomian nasional diselenggarakan berdasar atas demokrasi ekonomi"
+            ],
+            answer: "Perekonomian sebagai usaha bersama atas asas kekeluargaan"
+        },
+        {
+            q: "Dalam pelaksanaannya, tujuan utama koperasi adalah...",
+            options: [
+                "Meningkatkan kesejahteraan anggota pada khususnya dan masyarakat pada umumnya",
+                "Mengumpulkan modal sebesar-besarnya dari investor asing",
+                "Menyaingi perusahaan BUMN dan swasta besar",
+                "Membagikan dividen tertinggi kepada pengurus koperasi"
+            ],
+            answer: "Meningkatkan kesejahteraan anggota pada khususnya dan masyarakat pada umumnya"
+        },
+        {
+            q: "Dalam prinsip koperasi, pembagian Sisa Hasil Usaha (SHU) dilakukan secara adil sebanding dengan...",
+            options: [
+                "Besarnya jasa usaha masing-masing anggota",
+                "Jabatan anggota di dalam kepengurusan",
+                "Lamanya seseorang menjadi anggota koperasi",
+                "Jumlah simpanan sukarela yang disetorkan"
+            ],
+            answer: "Besarnya jasa usaha masing-masing anggota"
+        },
+        {
+            q: "Prinsip koperasi yang menyatakan bahwa tidak ada paksaan untuk masuk atau keluar dari koperasi adalah...",
+            options: [
+                "Keanggotaan bersifat sukarela dan terbuka",
+                "Pengelolaan dilakukan secara demokratis",
+                "Kemandirian dan otonom",
+                "Kerja sama antar koperasi"
+            ],
+            answer: "Keanggotaan bersifat sukarela dan terbuka"
+        },
+        {
+            q: "Koperasi merupakan badan usaha swadaya yang otonom dan independen. Hal ini mencerminkan prinsip koperasi yaitu...",
+            options: ["Kemandirian", "Demokrasi", "Pendidikan perkoperasian", "Pembangunan berkelanjutan"],
+            answer: "Kemandirian"
+        },
+        {
+            q: "Salah satu fungsi dan peran koperasi Indonesia adalah memperkokoh perekonomian rakyat sebagai dasar kekuatan dan ketahanan perekonomian nasional dengan koperasi sebagai...",
+            options: ["Soko gurunya", "Pemegang saham utama", "Pengawas tunggal", "Badan regulator"],
+            answer: "Soko gurunya"
+        },
+        {
+            q: "Koperasi yang beranggotakan paling sedikit 20 orang perorangan dan biasanya berada di tingkat kecamatan (contohnya KUD) disebut...",
+            options: ["Koperasi Primer", "Koperasi Pusat", "Koperasi Gabungan", "Koperasi Induk"],
+            answer: "Koperasi Primer"
+        },
+        {
+            q: "Koperasi Pusat merupakan gabungan dari paling sedikit...",
+            options: ["5 koperasi primer", "3 koperasi primer", "20 koperasi primer", "3 koperasi gabungan"],
+            answer: "5 koperasi primer"
+        },
+        {
+            q: "Koperasi yang beranggotakan paling sedikit 3 koperasi pusat di tingkat provinsi disebut...",
+            options: ["Koperasi Gabungan", "Koperasi Induk", "Koperasi Primer", "Koperasi Sekunder"],
+            answer: "Koperasi Gabungan"
+        },
+        {
+            q: "Tingkatan koperasi tertinggi di ibukota negara yang merupakan gabungan dari paling sedikit 3 koperasi gabungan adalah...",
+            options: ["Koperasi Induk", "Koperasi Pusat", "Koperasi Primer", "Koperasi Nasional"],
+            answer: "Koperasi Induk"
+        },
+        {
+            q: "Koperasi yang hanya mempunyai satu bidang usaha (misalnya koperasi simpan pinjam atau koperasi konsumsi) disebut...",
+            options: ["Single purpose", "Multi purpose", "Koperasi serba usaha", "Koperasi fungsional"],
+            answer: "Single purpose"
+        },
+        {
+            q: "Koperasi Unit Desa (KUD) dan koperasi serba usaha merupakan contoh jenis koperasi berdasarkan jumlah bidang usahanya yaitu...",
+            options: ["Multi purpose", "Single purpose", "Koperasi konsumsi", "Koperasi produksi"],
+            answer: "Multi purpose"
+        },
+        {
+            q: "Koperasi yang terdiri dari pegawai instansi tertentu seperti koperasi guru, pegawai negeri, atau angkatan laut termasuk jenis koperasi menurut lingkungannya yaitu...",
+            options: ["Koperasi fungsional", "Koperasi unit desa", "Koperasi sekolah", "Koperasi primer"],
+            answer: "Koperasi fungsional"
+        },
+        {
+            q: "Koperasi yang didirikan oleh para siswa di sekolah sebagai tempat pendidikan dan pelatihan berkoperasi disebut...",
+            options: ["Koperasi sekolah", "Koperasi fungsional", "Koperasi jasa", "Koperasi pemuda"],
+            answer: "Koperasi sekolah"
+        },
+        {
+            q: "Koperasi yang kegiatan usahanya menjual kebutuhan sehari-hari anggotanya adalah...",
+            options: ["Koperasi konsumsi", "Koperasi produksi", "Koperasi pemasaran", "Koperasi simpan pinjam"],
+            answer: "Koperasi konsumsi"
+        },
+        {
+            q: "Koperasi yang kegiatannya membantu penjualan barang atau jasa yang dihasilkan oleh para anggotanya disebut...",
+            options: ["Koperasi pemasaran", "Koperasi konsumsi", "Koperasi kredit", "Koperasi jasa"],
+            answer: "Koperasi pemasaran"
+        },
+        {
+            q: "Simpanan yang wajib dibayar pada saat pertama kali masuk menjadi anggota, besarnya sama untuk setiap anggota, dan tidak dapat diambil selama menjadi anggota disebut...",
+            options: ["Simpanan Pokok", "Simpanan Wajib", "Simpanan Sukarela", "Dana Cadangan"],
+            answer: "Simpanan Pokok"
+        },
+        {
+            q: "Simpanan yang wajib dibayar secara berkala (misalnya per bulan atau tiga bulanan) dan tidak dapat diambil kembali selama masih menjadi anggota adalah...",
+            options: ["Simpanan Wajib", "Simpanan Pokok", "Simpanan Sukarela", "Hibah"],
+            answer: "Simpanan Wajib"
+        },
+        {
+            q: "Sejumlah uang yang diperoleh dari penyisihan Sisa Hasil Usaha (SHU) untuk memupuk modal sendiri dan menutup kerugian koperasi bila diperlukan disebut...",
+            options: ["Dana Cadangan", "Hibah", "Simpanan Pokok", "Modal Pinjaman"],
+            answer: "Dana Cadangan"
+        },
+        {
+            q: "Sejumlah uang atau barang modal yang dapat dinilai dengan uang yang diterima dari pihak lain yang bersifat pemberian dan tidak mengikat termasuk modal sendiri koperasi yang disebut...",
+            options: ["Hibah", "Dana Cadangan", "Simpanan Sukarela", "Pinjaman Bank"],
+            answer: "Hibah"
+        },
+        {
+            q: "Berikut ini yang termasuk sumber MODAL PINJAMAN koperasi (bukan modal sendiri) adalah...",
+            options: ["Simpanan Sukarela", "Simpanan Pokok", "Simpanan Wajib", "Dana Cadangan"],
+            answer: "Simpanan Sukarela"
+        }
+    ];
+
+    let selectedDuration = 15;
+    let playerName = "";
+    let shuffledQuestions = [];
+    let currentQuestionIndex = 0;
+    let scoreCount = 0;
+    let timerInterval = null;
+    let timeLeft = 15;
+    let isAnswered = false;
+    let userHistory = [];
+
+    // Fungsi mengacak array (Fisher-Yates Shuffle)
+    function shuffleArray(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function selectDuration(seconds, btnElement) {
+        selectedDuration = seconds;
+        document.querySelectorAll('.duration-btn').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+    }
+
+    function startQuiz() {
+        const nameInput = document.getElementById('player-name').value.trim();
+        if (!nameInput) {
+            alert("Silakan masukkan nama Anda terlebih dahulu sebelum memulai kuis!");
+            document.getElementById('player-name').focus();
+            return;
+        }
+        playerName = nameInput;
+
+        // Acak urutan soal dan acak urutan pilihan jawaban setiap soal
+        shuffledQuestions = shuffleArray(questionBank).map(item => ({
+            q: item.q,
+            options: shuffleArray(item.options),
+            answer: item.answer
+        }));
+
+        currentQuestionIndex = 0;
+        scoreCount = 0;
+        userHistory = [];
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        document.getElementById('player-display').textContent = `Peserta: ${playerName}`;
+
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        isAnswered = false;
+        clearInterval(timerInterval);
+        timeLeft = selectedDuration;
+
+        const currentQ = shuffledQuestions[currentQuestionIndex];
+        document.getElementById('progress-display').textContent = `Soal ${currentQuestionIndex + 1} / ${shuffledQuestions.length}`;
+        document.getElementById('question-text').textContent = `${currentQuestionIndex + 1}. ${currentQ.q}`;
+        document.getElementById('status-msg').textContent = "";
+        document.getElementById('next-wrap').classList.add('hidden');
+
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = "";
+
+        const letters = ['A', 'B', 'C', 'D'];
+        currentQ.options.forEach((optText, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = `<strong>${letters[idx]}.</strong> <span>${optText}</span>`;
+            btn.dataset.value = optText;
+            btn.onclick = () => handleAnswer(optText, btn);
+            optionsContainer.appendChild(btn);
+        });
+
+        updateTimerUI();
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerUI();
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                handleTimeUp();
+            }
+        }, 1000);
+    }
+
+    function updateTimerUI() {
+        const timerEl = document.getElementById('timer-display');
+        timerEl.textContent = `Waktu: ${timeLeft}s`;
+        if (timeLeft <= 5) {
+            timerEl.classList.add('danger');
+        } else {
+            timerEl.classList.remove('danger');
+        }
+    }
+
+    function handleAnswer(selectedOption, clickedBtn) {
+        if (isAnswered) return;
+        isAnswered = true;
+        clearInterval(timerInterval);
+
+        const currentQ = shuffledQuestions[currentQuestionIndex];
+        const allButtons = document.querySelectorAll('.option-btn');
+        allButtons.forEach(btn => btn.disabled = true);
+
+        const isCorrect = (selectedOption === currentQ.answer);
+
+        if (isCorrect) {
+            clickedBtn.classList.add('correct');
+            scoreCount++;
+            document.getElementById('status-msg').textContent = "Tepat sekali! Jawaban Anda benar.";
+            document.getElementById('status-msg').style.color = "#15803d";
+            
+            // Efek Confetti saat jawaban benar
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 70,
+                    spread: 65,
+                    origin: { y: 0.65 }
+                });
+            }
+        } else {
+            clickedBtn.classList.add('wrong');
+            document.getElementById('status-msg').textContent = "Kurang tepat! Perhatikan jawaban yang berwarna hijau.";
+            document.getElementById('status-msg').style.color = "#b91c1c";
+
+            // Tampilkan jawaban benar berwarna hijau
+            allButtons.forEach(btn => {
+                if (btn.dataset.value === currentQ.answer) {
+                    btn.classList.add('correct');
+                }
+            });
+        }
+
+        userHistory.push({
+            question: currentQ.q,
+            userAnswer: selectedOption,
+            correctAnswer: currentQ.answer,
+            isCorrect: isCorrect,
+            timedOut: false
+        });
+
+        showNextButton();
+    }
+
+    function handleTimeUp() {
+        if (isAnswered) return;
+        isAnswered = true;
+
+        const currentQ = shuffledQuestions[currentQuestionIndex];
+        const allButtons = document.querySelectorAll('.option-btn');
+        allButtons.forEach(btn => {
+            btn.disabled = true;
+            if (btn.dataset.value === currentQ.answer) {
+                btn.classList.add('correct');
+            }
+        });
+
+        document.getElementById('status-msg').textContent = "Waktu habis! Jawaban yang benar ditandai warna hijau.";
+        document.getElementById('status-msg').style.color = "#b91c1c";
+
+        userHistory.push({
+            question: currentQ.q,
+            userAnswer: "Tidak dijawab (Waktu Habis)",
+            correctAnswer: currentQ.answer,
+            isCorrect: false,
+            timedOut: true
+        });
+
+        showNextButton();
+    }
+
+    function showNextButton() {
+        const nextWrap = document.getElementById('next-wrap');
+        const nextBtn = document.getElementById('next-btn');
+        if (currentQuestionIndex === shuffledQuestions.length - 1) {
+            nextBtn.textContent = "Lihat Hasil & Review";
+        } else {
+            nextBtn.textContent = "Soal Berikutnya \u2192";
+        }
+        nextWrap.classList.remove('hidden');
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < shuffledQuestions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+
+        // Rumus skor: (jumlah benar / total soal) * 100
+        const finalScore = Math.round((scoreCount / shuffledQuestions.length) * 100);
+
+        document.getElementById('result-quiz-title').textContent = QUIZ_TITLE;
+        document.getElementById('result-player').textContent = `Peserta: ${playerName}`;
+        document.getElementById('final-score').textContent = finalScore;
+        document.getElementById('score-detail').textContent = `Jumlah Benar: ${scoreCount} dari ${shuffledQuestions.length} Soal`;
+
+        const reviewList = document.getElementById('review-list');
+        reviewList.innerHTML = "";
+
+        userHistory.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'review-item';
+
+            const userClass = item.isCorrect ? 'ans-user-correct' : 'ans-user-wrong';
+            const statusLabel = item.isCorrect ? '✔ Benar' : (item.timedOut ? '⏰ Waktu Habis' : '✘ Salah');
+
+            div.innerHTML = `
+                <div class="review-q">${index + 1}. ${item.question}</div>
+                <div class="review-ans ${userClass}">
+                    <strong>Jawaban Anda (${statusLabel}):</strong> ${item.userAnswer}
+                </div>
+                ${!item.isCorrect ? `
+                <div class="review-ans ans-key">
+                    <strong>Jawaban yang Benar:</strong> ${item.correctAnswer}
+                </div>` : ''}
+            `;
+            reviewList.appendChild(div);
+        });
+    }
+
+    function restartQuiz() {
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>
